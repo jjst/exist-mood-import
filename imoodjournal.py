@@ -1,5 +1,8 @@
 from collections import namedtuple
 from datetime import datetime
+import csv
+import sys
+import webbrowser
 
 Mood = namedtuple('Mood', ['date', 'level', 'comment', 'tags'])
 
@@ -14,11 +17,21 @@ def mood_from_row(row, mood_tags):
     tags = [mood_tags[i] for i in active_indices]
     return Mood(date=d, level=int(row[4]), comment=row[6], tags=tags)
 
-if __name__ == '__main__':
-    with open('iMoodJournal.csv') as csvfile:
+def import_moods_from_csv(csv_file_name):
+    with open(csv_file_name) as csvfile:
         reader = csv.reader(csvfile)
         headers = next(reader)
         mood_tags = headers[7:]
-        print(mood_tags)
-        for row in reader:
-            print(mood_from_row(row, mood_tags))
+        return [mood_from_row(row, mood_tags) for row in reader]
+
+def authorize_app():
+    webbrowser.open('https://exist.io/oauth2/authorize?response_type=code&client_id=%s&scope=%s' % (CLIENT_ID, "read+write"))
+
+def main():
+    filename = sys.argv[1]
+    authorize_app()
+    moods = import_moods_from_csv(filename)
+
+if __name__ == '__main__':
+    main()
+
