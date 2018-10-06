@@ -2,6 +2,8 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 import urllib
 import threading
 import webbrowser
+import requests
+import os
 
 CLIENT_ID = '21c2af8828250ddc0fc5'
 
@@ -36,3 +38,17 @@ def obtain_auth_code():
     webbrowser.open('https://exist.io/oauth2/authorize?response_type=code&client_id=%s&scope=%s' % (CLIENT_ID, "read+write"))
     run_server()
     return CODE
+
+def get_oauth_token(code):
+    url = 'https://exist.io/oauth2/access_token'
+    client_secret = os.environ['CLIENT_SECRET']
+    response = requests.post(url,
+               {'grant_type':'authorization_code',
+                'code':code,
+                'client_id':CLIENT_ID,
+                'client_secret':client_secret})
+    return response.json()['access_token']
+
+def token():
+    code = obtain_auth_code()
+    return get_oauth_token(code)
