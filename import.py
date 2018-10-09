@@ -1,9 +1,11 @@
+#!/usr/bin/python3
+
 import sys
 import requests, json
 import auth
-import operator
 import imoodjournal
 import daylio
+import os
 
 
 def acquire_attrs(attributes, token):
@@ -62,8 +64,12 @@ def do_import(mood_data_file, token):
 
 
 def main():
-    filename = sys.argv[1]
-    token = auth.token()
+    try:
+        filename = sys.argv[1]
+    except IndexError:
+        print(f"Usage: {sys.argv[0]} <daylio_or_imoodjournal_export.csv>")
+        sys.exit(1)
+    token = os.environ.get("ACCESS_TOKEN") or auth.token()
     do_import(filename, token)
 
 if __name__ == '__main__':

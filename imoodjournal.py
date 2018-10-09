@@ -2,6 +2,8 @@ from mood import Mood
 import csv
 from datetime import datetime
 import itertools
+import operator
+import mood
 
 def mood_from_row(row, mood_tags):
     date_string = row[0]
@@ -25,5 +27,5 @@ def import_csv(csv_file_name):
             raise ValueError(f"Unexpected headers: {actual_headers}. Is this a valid iMoodJournal export?")
         mood_tags = headers[7:]
         all_moods = [mood_from_row(row, mood_tags) for row in reader]
-        unique_moods_per_day = [combine(date, moods) for (date, moods) in itertools.groupby(all_moods, operator.attrgetter('date'))]
+        unique_moods_per_day = [mood.combine(date, moods) for (date, moods) in itertools.groupby(all_moods, operator.attrgetter('date'))]
         return unique_moods_per_day
