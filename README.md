@@ -18,7 +18,7 @@ pip3 install -r requirements.txt
 
 ### Export and download data from iMoodJournal/Daylio
 
-Both applications support a way to export all of your data as a CSV file. 
+Both applications support a way to export all of your data as a CSV file from the app settings. 
 You will need a way to export the data out of your phone - easiest is probably to send it to yourself via email.
 
 ### Create a new Exist app
