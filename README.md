@@ -43,5 +43,6 @@ env ACCESS_TOKEN=<YOUR ACCESS TOKEN> ./import.py <PATH TO YOUR DAYLIO OR IMOODJO
 
 ## Caveats
 
+* The imported data will **overwrite existing data** for the corresponding days! 
 * iMoodJournal rates moods on a scale from 1-10, but Exists rates from 1-5, so mood levels get scaled down by 2.
 * Daylio supports custom mood levels - this is not supported. The script assumes the default mood levels (rad, good, meh, bad, awful) are used.
