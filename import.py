@@ -55,13 +55,30 @@ def publish_data(moods, token):
 def do_import(mood_data_file, token):
     try:
         mood_data = imoodjournal.import_csv(mood_data_file)
+        data_type = "imoodjournal"
     except ValueError:
         mood_data = daylio.import_csv(mood_data_file)
+        data_type = "daylio"
+    print(f"Loaded {data_type} data. Starting import...")
     attrs = ["mood", "mood_note", "custom"]
     try:
         acquire_attrs(attrs, token)
-        for moods in group(mood_data, 40):
-            publish_data(moods, token)
+        chunk_size = 5
+        chunk_count = (len(mood_data) // chunk_size) + 1
+        for (i, moods) in enumerate(group(mood_data, chunk_size)):
+            res = publish_data(moods, token)
+            if res.status_code != 200:
+                print(f"Error sending request {res.json()}")
+            else:
+                json = res.json()
+                failed = json['failed']
+                if failed:
+                    print(f"Some attributes failed to publish: {failed}")
+                success = json['success']
+                if success:
+                    print(f"Successfully published attributes [chunk {i + 1}/{chunk_count}]:")
+                    print("\n".join("  - " + str(a) for a in success))
+        print("Finished import.")
     finally:
         release_attrs(attrs, token)
 
