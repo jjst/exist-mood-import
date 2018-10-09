@@ -6,6 +6,7 @@ import auth
 import imoodjournal
 import daylio
 import os
+import itertools
 
 
 def acquire_attrs(attributes, token):
@@ -26,27 +27,28 @@ def release_attrs(attributes, token):
         json=attrs)
     return response
 
-def publish_data(moods, token):
-    for mood in moods:
-        response = publish_one(mood, token)
-        print(response)
-        print(response.json())
-
-
-def publish_one(mood, token):
-    url = 'https://exist.io/api/1/attributes/update/'
+def attributes(mood):
     def create_attr(name, value, date):
         date_format = '%Y-%m-%d'
         return {"name": name, "date": date.strftime(date_format), "value": value}
-    def attributes(mood):
-        attrs = [create_attr("mood", mood.level, mood.date)]
-        if mood.comment:
-            attrs.append(create_attr("mood_note", mood.comment, mood.date))
-        if mood.tags:
-            attrs.append(create_attr("custom", ", ".join(mood.tags), mood.date))
-        return attrs
+    attrs = [create_attr("mood", mood.level, mood.date)]
+    if mood.comment:
+        attrs.append(create_attr("mood_note", mood.comment, mood.date))
+    if mood.tags:
+        attrs.append(create_attr("custom", ", ".join(mood.tags), mood.date))
+    return attrs
+
+def group(iterable, n, fillvalue=None):
+    args = [iter(iterable)] * n
+    return itertools.zip_longest(*args, fillvalue=fillvalue)
+
+def publish_data(moods, token):
+    attrs = []
+    for mood in moods:
+        attrs += attributes(mood)
+    url = 'https://exist.io/api/1/attributes/update/'
     response = requests.post(url, headers={'Authorization':f"Bearer {token}"},
-        json=attributes(mood))
+        json=attrs)
     return response
 
 
@@ -58,7 +60,8 @@ def do_import(mood_data_file, token):
     attrs = ["mood", "mood_note", "custom"]
     try:
         acquire_attrs(attrs, token)
-        publish_data(mood_data, token)
+        for moods in group(mood_data, 40):
+            publish_data(moods, token)
     finally:
         release_attrs(attrs, token)
 
